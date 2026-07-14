@@ -2,14 +2,9 @@
 Generates a single embedding per contact from a concatenation of the fields
 that matter for semantic search: summary, capabilities, relevance, skills.
 """
-from openai import OpenAI
-
+from app.core.ai_client import get_openai_client
 from app.core.config import settings
 from app.schemas.contact import ExtractionResult
-
-
-def _client() -> OpenAI:
-    return OpenAI(api_key=settings.OPENAI_API_KEY)
 
 
 def build_embedding_text(data: ExtractionResult) -> str:
@@ -27,7 +22,7 @@ def build_embedding_text(data: ExtractionResult) -> str:
 
 
 def embed_text(text: str) -> list[float]:
-    client = _client()
+    client = get_openai_client()
     response = client.embeddings.create(
         model=settings.OPENAI_EMBEDDING_MODEL,
         input=text,

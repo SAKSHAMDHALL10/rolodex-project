@@ -10,8 +10,7 @@ who should reach out and when).
 import json
 import logging
 
-from openai import OpenAI
-
+from app.core.ai_client import get_openai_client
 from app.core.config import settings
 from app.schemas.contact import ExtractionResult
 
@@ -52,10 +51,6 @@ would plausibly contain.
 """
 
 
-def _client() -> OpenAI:
-    return OpenAI(api_key=settings.OPENAI_API_KEY)
-
-
 def _extraction_json_schema() -> dict:
     schema = ExtractionResult.model_json_schema()
     # OpenAI structured outputs require additionalProperties: false at every object level.
@@ -84,7 +79,7 @@ def _lock_down_schema(node: dict) -> None:
 
 def extract_profile(cleaned_text: str) -> ExtractionResult:
     """Call OpenAI to extract a structured rolodex entry from cleaned profile text."""
-    client = _client()
+    client = get_openai_client()
 
     response = client.responses.create(
         model=settings.OPENAI_EXTRACTION_MODEL,
@@ -123,7 +118,7 @@ def parse_natural_language_query(query: str) -> dict:
     Convert a free-text search ("Who has healthcare experience and knows Kubernetes?")
     into structured filters + a semantic-search phrase, via OpenAI structured output.
     """
-    client = _client()
+    client = get_openai_client()
 
     schema = {
         "type": "object",

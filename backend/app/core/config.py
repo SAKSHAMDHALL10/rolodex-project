@@ -5,10 +5,10 @@ All values are read from environment variables (see .env.example).
 Nothing sensitive is hard-coded.
 """
 from functools import lru_cache
-from typing import List
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
@@ -39,8 +39,59 @@ class Settings(BaseSettings):
     DUPLICATE_SIMILARITY_THRESHOLD: float = Field(default=0.90)
     DUPLICATE_NAME_FUZZ_THRESHOLD: int = Field(default=88)
 
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, value: str) -> str:
+        """
+        Catch the single most common real-world Supabase deployment mistake:
+        a password containing special characters (@, #, %, /, :) pasted
+        straight from the Supabase dashboard without percent-encoding.
+        SQLAlchemy still "parses" such a URL, but silently misreads where the
+        password ends and the host begins - e.g. a password of `p@ss` turns
+        `...://user:p@ss@host/db` into host `ss@host`, which then fails much
+        later with a confusing DNS/auth error instead of a clear one now.
+        """
+        try:
+            url = make_url(value)
+        except Exception as exc:
+            raise ValueError(
+                f"DATABASE_URL could not be parsed: {exc}. Expected format: "
+                "postgresql+psycopg://user:password@host:port/dbname"
+            ) from exc
+
+        if url.host and "@" in url.host:
+            raise ValueError(
+                "DATABASE_URL looks malformed: the parsed host "
+                f"({url.host!r}) still contains '@', which means the password "
+                "portion likely has an un-encoded special character (common "
+                "with Supabase passwords containing @, #, %, /, or :). "
+                "Percent-encode the password, e.g. with Python's "
+                "urllib.parse.quote_plus(password), before building the URL."
+            )
+
+        if url.drivername in ("postgresql", "postgres"):
+            raise ValueError(
+                f"DATABASE_URL uses the bare {url.drivername!r} scheme, which SQLAlchemy "
+                "will try to load via psycopg2 - but this project only installs psycopg3 "
+                "(see requirements.txt), so it will fail at connection time with "
+                "'ModuleNotFoundError: No module named psycopg2'. This is the exact "
+                "format Supabase's and Render's dashboards hand out by default. Fix: "
+                "change the scheme prefix from "
+                f"'{url.drivername}://' to 'postgresql+psycopg://' (same host/user/"
+                "password/db, just the scheme changes)."
+            )
+
+        if url.drivername not in ("postgresql+psycopg", "postgresql+psycopg2"):
+            raise ValueError(
+                f"DATABASE_URL uses driver {url.drivername!r}, but this app is "
+                "built for psycopg3 with SQLAlchemy 2.x. Use the "
+                "'postgresql+psycopg://' scheme."
+            )
+
+        return value
+
     @property
-    def cors_origins_list(self) -> List[str]:
+    def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
 
