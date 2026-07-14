@@ -1,6 +1,7 @@
 services:
   db:
     image: pgvector/pgvector:pg16
+    init: true
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -12,16 +13,22 @@ services:
       - rolodex_pg_data:/var/lib/postgresql/data
       - ./backend/migrations:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rolodex"]
       interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 5s
 
   backend:
     build: ./backend
+    init: true
     restart: unless-stopped
     env_file:
-      - ./backend/.env
+      # Optional so the database, API, docs, and frontend can start before a
+      # Gemini key is configured. AI endpoints return a clear 502 until a real
+      # GEMINI_API_KEY is added to backend/.env.
+      - path: ./backend/.env
+        required: false
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/rolodex
       CORS_ORIGINS: http://localhost:3000
@@ -30,6 +37,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8000/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   frontend:
     build:
@@ -40,11 +53,23 @@ services:
       # effect, since the container never rebuilds the bundle at startup.
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    init: true
     restart: unless-stopped
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 volumes:
   rolodex_pg_data:

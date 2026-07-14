@@ -112,38 +112,31 @@ prefer running things natively.
 2. **Get a Gemini API key**: go to https://aistudio.google.com/apikey, sign
    in with a Google account, and click "Create API key".
 3. **Clone/unzip the project** and open a terminal in its root folder.
-4. **Configure the backend:**
+4. **Configure Gemini (optional for boot, required for AI features):**
    ```bash
    cd backend
    cp .env.example .env
    ```
-   Open `backend/.env` and paste your key into `GEMINI_API_KEY=`.
-5. **Configure the frontend:**
+   Open `backend/.env` and paste your key into `GEMINI_API_KEY=`. You may skip
+   this step if you only want to boot and inspect the stack: the database,
+   frontend, API, health checks, and Swagger docs all run without a key, while
+   AI ingestion/search endpoints return a clear 502 until one is configured.
+5. **No frontend env file is needed for Docker Compose.** The frontend image
+   gets `NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1` from the build arg
+   in `docker-compose.yml`, because Next.js inlines public variables at build
+   time. `frontend/.env` is only needed for the native `npm run dev` workflow.
+6. **Start everything** from the project root (or `cd ..` if you completed
+   step 4):
    ```bash
-   cd ../frontend
-   cp .env.example .env
-   ```
-   The default `NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1` is correct
-   for local Docker use — leave it as is.
-
-   > **Note:** when running via `docker compose`, the frontend container
-   > actually gets `NEXT_PUBLIC_API_URL` from the `build.args` in
-   > `docker-compose.yml`, not from `frontend/.env` — Next.js inlines
-   > `NEXT_PUBLIC_*` variables into the client bundle at *build* time, so they
-   > have to be passed as a Docker build arg rather than a runtime container
-   > variable. `frontend/.env` is still used by `npm run dev` (Option B below).
-   > If you change the backend's port or host, update the `args:` value in
-   > `docker-compose.yml` and re-run `docker compose up --build`.
-6. **Start everything** from the project root:
-   ```bash
-   cd ..
    docker compose up --build
    ```
-   This starts Postgres with pgvector already installed (via the
-   `pgvector/pgvector:pg16` image), runs the `001_init.sql` migration
-   automatically on first boot, then starts the backend on port 8000 and the
-   frontend on port 3000.
-7. **Open the app:** http://localhost:3000
+   Compose waits for PostgreSQL and the backend readiness check before starting
+   dependent services. On first boot it installs pgvector, runs
+   `001_init.sql`, and then starts the API and standalone Next.js server.
+7. **Open the services:**
+   - App: http://localhost:3000
+   - API docs: http://localhost:8000/docs
+   - Readiness check: http://localhost:8000/health/ready
 8. **Load the sample profiles** (optional but recommended for a first look):
    with the stack running, in a new terminal:
    ```bash
@@ -156,9 +149,17 @@ prefer running things natively.
    through the real pipeline (Gemini extraction + embeddings), so you'll see
    real generated rolodex entries rather than the static fixture JSON.
 
-To stop everything: `docker compose down` (add `-v` to also wipe the database).
+Useful commands:
+```bash
+docker compose ps              # all three services should show healthy
+docker compose logs -f         # follow application and database logs
+docker compose down            # stop containers and preserve database data
+docker compose down -v         # stop containers and wipe the local database
+```
 
 ### Option B — Run natively (no Docker)
+
+Use Python 3.12 and Node.js 20 for the versions pinned by this project.
 
 1. **Install PostgreSQL 16** locally (e.g. `brew install postgresql@16` on
    macOS, or use your OS package manager).

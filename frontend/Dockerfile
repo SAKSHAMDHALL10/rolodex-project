@@ -14,16 +14,26 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # the README for how this is supplied in each environment.
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-RUN npm run build
+# Some projects do not need static assets and therefore have no checked-in
+# public/ directory. Create it so the runtime COPY below is always valid.
+RUN mkdir -p public && npm run build
 
 FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+COPY --from=builder --chown=node:node /app/public ./public
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+
+USER node
 
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=10 \
+  CMD node -e "fetch('http://localhost:3000').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"
+
+CMD ["node", "server.js"]
