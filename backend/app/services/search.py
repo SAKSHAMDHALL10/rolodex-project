@@ -55,7 +55,7 @@ def keyword_search(db: Session, text_query: str, filters: SearchFilters, limit: 
 
 
 def semantic_search(db: Session, text_query: str, filters: SearchFilters, limit: int):
-    query_embedding = embed_text(text_query)
+    query_embedding = embed_text(text_query, task_type="RETRIEVAL_QUERY")
     stmt = select(Contact, Contact.embedding.cosine_distance(query_embedding).label("distance"))
     stmt = _apply_filters(stmt, filters)
     stmt = stmt.where(Contact.embedding.isnot(None)).order_by("distance").limit(limit)

@@ -1,5 +1,5 @@
 from app.schemas.contact import ExtractionResult
-from app.services.extraction import _extraction_json_schema, _lock_down_schema
+from app.services.extraction import _NL_QUERY_JSON_SCHEMA
 
 
 def test_extraction_result_requires_core_fields():
@@ -12,19 +12,27 @@ def test_extraction_result_requires_core_fields():
     assert result.relevance_tags == []
 
 
-def test_schema_lockdown_sets_additional_properties_false_recursively():
-    schema = _extraction_json_schema()
-    assert schema["additionalProperties"] is False
+def test_extraction_result_is_a_valid_pydantic_model_for_gemini_response_schema():
+    """
+    Gemini's response_schema accepts a Pydantic model class directly - just
+    confirm ExtractionResult is a plain BaseModel subclass the SDK can convert.
+    """
+    from pydantic import BaseModel
 
-    # Nested $defs (e.g. ExperienceItem, EducationItem) must also be locked down.
-    for _, sub_schema in schema.get("$defs", {}).items():
-        if sub_schema.get("type") == "object":
-            assert sub_schema["additionalProperties"] is False
+    assert issubclass(ExtractionResult, BaseModel)
 
 
-def test_lock_down_schema_is_idempotent():
-    schema = {"type": "object", "properties": {"a": {"type": "string"}}}
-    _lock_down_schema(schema)
-    _lock_down_schema(schema)
-    assert schema["additionalProperties"] is False
-    assert schema["required"] == ["a"]
+def test_nl_query_json_schema_is_well_formed():
+    assert _NL_QUERY_JSON_SCHEMA["type"] == "object"
+    expected_fields = {
+        "role",
+        "company",
+        "industry",
+        "location",
+        "skills",
+        "technologies",
+        "tags",
+        "semantic_phrase",
+    }
+    assert set(_NL_QUERY_JSON_SCHEMA["properties"].keys()) == expected_fields
+    assert "semantic_phrase" in _NL_QUERY_JSON_SCHEMA["required"]

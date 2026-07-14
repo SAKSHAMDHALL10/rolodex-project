@@ -1,24 +1,19 @@
 import pytest
+from google import genai
 
-from app.core.ai_client import OpenAIKeyMissingError, get_openai_client
+from app.core.ai_client import GeminiKeyMissingError, get_gemini_client
 
 
 def test_raises_clean_error_when_key_missing(monkeypatch):
-    monkeypatch.setattr("app.core.ai_client.settings.OPENAI_API_KEY", "")
-    get_openai_client.cache_clear()
-    with pytest.raises(OpenAIKeyMissingError):
-        get_openai_client()
-
-
-def test_openai_key_missing_error_is_catchable_as_openai_error():
-    import openai
-
-    assert issubclass(OpenAIKeyMissingError, openai.OpenAIError)
+    monkeypatch.setattr("app.core.ai_client.settings.GEMINI_API_KEY", "")
+    get_gemini_client.cache_clear()
+    with pytest.raises(GeminiKeyMissingError, match="Gemini API key is not configured."):
+        get_gemini_client()
 
 
 def test_returns_client_when_key_present(monkeypatch):
-    monkeypatch.setattr("app.core.ai_client.settings.OPENAI_API_KEY", "sk-test-key")
-    get_openai_client.cache_clear()
-    client = get_openai_client()
-    assert client.api_key == "sk-test-key"
-    get_openai_client.cache_clear()
+    monkeypatch.setattr("app.core.ai_client.settings.GEMINI_API_KEY", "test-gemini-key")
+    get_gemini_client.cache_clear()
+    client = get_gemini_client()
+    assert isinstance(client, genai.Client)
+    get_gemini_client.cache_clear()

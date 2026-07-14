@@ -1,35 +1,29 @@
 """
-Shared OpenAI client construction.
+Shared Gemini (Google GenAI) client construction.
 
-Both the extraction and embeddings services need an OpenAI client; this
-centralizes that (removing duplicated `_client()` helpers) and gives a
-single place to fail fast when `OPENAI_API_KEY` isn't configured, rather
-than letting every call site make a live network round-trip just to hit an
-auth error from OpenAI's side.
+Both the extraction and embeddings services need a Gemini client; this
+centralizes that and gives a single place to fail fast when `GEMINI_API_KEY`
+isn't configured, rather than letting every call site make a live network
+round-trip just to hit an auth error from Gemini's side.
 """
 from functools import lru_cache
 
-import openai
-from openai import OpenAI
+from google import genai
 
 from app.core.config import settings
 
 
-class OpenAIKeyMissingError(openai.OpenAIError):
+class GeminiKeyMissingError(Exception):
     """
-    Raised before any network call when OPENAI_API_KEY isn't configured.
-    Subclasses openai.OpenAIError so existing `except openai.OpenAIError`
-    handling in the routers already catches this correctly - callers get a
-    clean 502 with an actionable message instead of an unhandled crash or a
-    generic upstream authentication error.
+    Raised before any network call when GEMINI_API_KEY isn't configured.
+    Caught explicitly (alongside google.genai.errors.APIError) in the routers
+    to return a clean 502 with an actionable message instead of an unhandled
+    crash or a generic upstream authentication error.
     """
 
 
 @lru_cache
-def get_openai_client() -> OpenAI:
-    if not settings.OPENAI_API_KEY:
-        raise OpenAIKeyMissingError(
-            "OPENAI_API_KEY is not configured on this server. AI extraction and "
-            "AI-powered search are unavailable until it's set in the environment."
-        )
-    return OpenAI(api_key=settings.OPENAI_API_KEY)
+def get_gemini_client() -> genai.Client:
+    if not settings.GEMINI_API_KEY:
+        raise GeminiKeyMissingError("Gemini API key is not configured.")
+    return genai.Client(api_key=settings.GEMINI_API_KEY)

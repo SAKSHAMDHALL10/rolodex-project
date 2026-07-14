@@ -1,5 +1,5 @@
 """
-Pydantic schemas (API contracts + the structured-output contract with OpenAI).
+Pydantic schemas (API contracts + the structured-output contract with Gemini).
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ class IngestRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# What the LLM must return (OpenAI structured JSON output contract)
+# What the LLM must return (Gemini structured JSON output contract)
 # ---------------------------------------------------------------------------
 class ExtractionResult(BaseModel):
     full_name: str

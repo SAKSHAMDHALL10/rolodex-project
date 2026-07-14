@@ -67,7 +67,7 @@ class Contact(Base):
 
     # --- Vector search ---
     embedding: Mapped[list | None] = mapped_column(
-        Vector(settings.OPENAI_EMBEDDING_DIMENSIONS), nullable=True
+        Vector(settings.GEMINI_EMBEDDING_DIMENSIONS), nullable=True
     )
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

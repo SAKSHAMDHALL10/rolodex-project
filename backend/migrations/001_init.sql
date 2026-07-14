@@ -38,8 +38,9 @@ CREATE TABLE IF NOT EXISTS contacts (
     raw_source_text     TEXT,
     source_type         VARCHAR(50),
 
-    -- text-embedding-3-small has 1536 dimensions; keep in sync with
-    -- OPENAI_EMBEDDING_DIMENSIONS in app/core/config.py.
+    -- gemini-embedding-001 is configured for 1536 output dimensions (one of
+    -- Google's recommended tiers); keep in sync with
+    -- GEMINI_EMBEDDING_DIMENSIONS in app/core/config.py.
     embedding           vector(1536),
 
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),

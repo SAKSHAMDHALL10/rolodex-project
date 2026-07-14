@@ -1,15 +1,15 @@
 """
 Seeds a running Rolodex API with the 5 sample LinkedIn profiles, using the
-real ingestion pipeline (OpenAI extraction + embeddings), so you see genuine
+real ingestion pipeline (Gemini extraction + embeddings), so you see genuine
 generated entries rather than the static fixtures in sample_data/generated_entries/.
 
 Usage:
     python3 scripts/seed_sample_data.py
     python3 scripts/seed_sample_data.py --api-url https://your-backend.up.railway.app/api/v1
 
-Requires the backend to be running and reachable, and OPENAI_API_KEY to be
+Requires the backend to be running and reachable, and GEMINI_API_KEY to be
 set on the backend (this script only makes HTTP requests — it doesn't call
-OpenAI directly).
+Gemini directly).
 """
 import argparse
 import sys

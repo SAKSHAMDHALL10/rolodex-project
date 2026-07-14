@@ -2,10 +2,11 @@
 /search endpoints: structured filter search, semantic search, and the
 natural-language endpoint that powers the AI search box.
 """
-import openai
 from fastapi import APIRouter, Depends, HTTPException
+from google.genai import errors as genai_errors
 from sqlalchemy.orm import Session
 
+from app.core.ai_client import GeminiKeyMissingError
 from app.core.database import get_db
 from app.models.contact import SearchLog
 from app.schemas.contact import NaturalLanguageQuery, SearchRequest, SearchResponse
@@ -26,8 +27,12 @@ def search(payload: SearchRequest, db: Session = Depends(get_db)):
     """Structured + optional semantic search over explicit filters."""
     try:
         filters, results = run_search(db, payload)
-    except openai.OpenAIError as exc:
-        raise HTTPException(status_code=502, detail=f"AI search service error: {exc}") from exc
+    except GeminiKeyMissingError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except genai_errors.APIError as exc:
+        raise HTTPException(
+            status_code=502, detail=f"AI search service error: {exc.message}"
+        ) from exc
     _log_search(db, payload.query or "", len(results))
     return SearchResponse(
         query=payload.query, interpreted_filters=filters, results=results, total=len(results)
@@ -43,8 +48,12 @@ def natural_language_search(payload: NaturalLanguageQuery, db: Session = Depends
     """
     try:
         filters, results = run_natural_language_search(db, payload.query)
-    except openai.OpenAIError as exc:
-        raise HTTPException(status_code=502, detail=f"AI search service error: {exc}") from exc
+    except GeminiKeyMissingError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except genai_errors.APIError as exc:
+        raise HTTPException(
+            status_code=502, detail=f"AI search service error: {exc.message}"
+        ) from exc
     _log_search(db, payload.query, len(results))
     return SearchResponse(
         query=payload.query, interpreted_filters=filters, results=results, total=len(results)

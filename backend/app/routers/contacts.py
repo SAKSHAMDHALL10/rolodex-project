@@ -3,11 +3,12 @@
 """
 import uuid
 
-import openai
 from fastapi import APIRouter, Depends, HTTPException, Query
+from google.genai import errors as genai_errors
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.ai_client import GeminiKeyMissingError
 from app.core.database import get_db
 from app.models.contact import Contact
 from app.schemas.contact import (
@@ -34,9 +35,11 @@ def ingest_contact(payload: IngestRequest, db: Session = Depends(get_db)):
         return ingest_profile(db, payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except openai.OpenAIError as exc:
+    except GeminiKeyMissingError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except genai_errors.APIError as exc:
         raise HTTPException(
-            status_code=502, detail=f"AI extraction service error: {exc}"
+            status_code=502, detail=f"AI extraction service error: {exc.message}"
         ) from exc
 
 
@@ -47,9 +50,11 @@ def ingest_contact_force(payload: IngestRequest, db: Session = Depends(get_db)):
         return ingest_profile(db, payload, force_create=True)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except openai.OpenAIError as exc:
+    except GeminiKeyMissingError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except genai_errors.APIError as exc:
         raise HTTPException(
-            status_code=502, detail=f"AI extraction service error: {exc}"
+            status_code=502, detail=f"AI extraction service error: {exc.message}"
         ) from exc
 
 

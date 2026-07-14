@@ -26,11 +26,15 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://postgres:postgres@localhost:5432/rolodex"
     )
 
-    # --- OpenAI ---
-    OPENAI_API_KEY: str = Field(default="")
-    OPENAI_EXTRACTION_MODEL: str = Field(default="gpt-4.1")
-    OPENAI_EMBEDDING_MODEL: str = Field(default="text-embedding-3-small")
-    OPENAI_EMBEDDING_DIMENSIONS: int = Field(default=1536)
+    # --- Gemini (Google GenAI) ---
+    GEMINI_API_KEY: str = Field(default="")
+    GEMINI_MODEL: str = Field(default="gemini-2.5-flash")
+    GEMINI_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001")
+    # gemini-embedding-001 defaults to 3072 dims but supports configurable
+    # output_dimensionality via Matryoshka truncation; 1536 is one of Google's
+    # own recommended tiers (alongside 3072/768) and keeps the existing
+    # pgvector column size and ivfflat index unchanged.
+    GEMINI_EMBEDDING_DIMENSIONS: int = Field(default=1536)
 
     # --- CORS ---
     CORS_ORIGINS: str = Field(default="http://localhost:3000")

@@ -19,14 +19,14 @@ LinkedIn profile text/export
   clean_profile_text()        strips nav chrome, ads, duplicate lines
         │
         ▼
-  extract_profile()           OpenAI Responses API, strict JSON schema output
-        │                     → identity, capabilities, and (the hard part)
-        │                       *relevance*: why someone would search for them
+  extract_profile()           Gemini API (Google GenAI SDK), structured JSON
+        │                     output → identity, capabilities, and (the hard
+        │                       part) *relevance*: why someone would search for them
         ▼
   build_embedding_text()      concatenates summary + relevance + skills
         │                     + capabilities
         ▼
-  embed_text()                OpenAI Embeddings API → 1536-dim vector
+  embed_text()                Gemini Embeddings (gemini-embedding-001) → 1536-dim vector
         │
         ▼
   find_duplicates()           exact URL match → fuzzy name match → cosine
@@ -51,7 +51,7 @@ Search works two ways:
 | Frontend   | Next.js 15 (App Router), React 19, TypeScript, TailwindCSS           |
 | Backend    | FastAPI, SQLAlchemy 2.0, Pydantic v2                                  |
 | Database   | PostgreSQL 16 + pgvector                                             |
-| AI         | OpenAI Responses API (structured JSON output) + Embeddings API       |
+| AI         | Gemini API via Google GenAI SDK (structured JSON output + embeddings) |
 | Deployment | Vercel (frontend) · Railway/Render (backend) · Supabase (database)   |
 
 ---
@@ -109,15 +109,15 @@ prefer running things natively.
 ### Option A — Docker Compose (fastest)
 
 1. **Install Docker Desktop** if you don't have it: https://www.docker.com/products/docker-desktop/
-2. **Get an OpenAI API key**: go to https://platform.openai.com/api-keys, sign
-   in, click "Create new secret key", copy it (starts with `sk-`).
+2. **Get a Gemini API key**: go to https://aistudio.google.com/apikey, sign
+   in with a Google account, and click "Create API key".
 3. **Clone/unzip the project** and open a terminal in its root folder.
 4. **Configure the backend:**
    ```bash
    cd backend
    cp .env.example .env
    ```
-   Open `backend/.env` and paste your key into `OPENAI_API_KEY=`.
+   Open `backend/.env` and paste your key into `GEMINI_API_KEY=`.
 5. **Configure the frontend:**
    ```bash
    cd ../frontend
@@ -153,7 +153,7 @@ prefer running things natively.
    python3 scripts/seed_sample_data.py
    ```
    This ingests the 5 sample LinkedIn profiles in `sample_data/linkedin_profiles/`
-   through the real pipeline (OpenAI extraction + embeddings), so you'll see
+   through the real pipeline (Gemini extraction + embeddings), so you'll see
    real generated rolodex entries rather than the static fixture JSON.
 
 To stop everything: `docker compose down` (add `-v` to also wipe the database).
@@ -183,7 +183,7 @@ To stop everything: `docker compose down` (add `-v` to also wipe the database).
    cd backend
    python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt
-   cp .env.example .env   # then paste your OPENAI_API_KEY into .env
+   cp .env.example .env   # then paste your GEMINI_API_KEY into .env
    uvicorn app.main:app --reload --port 8000
    ```
    Visit http://localhost:8000/docs to confirm the API is up (interactive
@@ -206,12 +206,12 @@ source .venv/bin/activate
 pytest -v
 ```
 
-The included tests cover input cleaning, the OpenAI structured-output JSON
+The included tests cover input cleaning, the Gemini structured-output JSON
 schema lockdown, fuzzy name-matching thresholds, schema validation, and API
-route registration/health. They don't require a live Postgres or OpenAI key.
+route registration/health. They don't require a live Postgres or Gemini key.
 Full end-to-end ingestion (`/contacts/ingest`) is exercised manually via the
 UI or the example `curl` requests below, since it requires both a live
-database and a real `OPENAI_API_KEY`.
+database and a real `GEMINI_API_KEY`.
 
 ---
 
@@ -259,7 +259,7 @@ git push -u origin main
    `backend` in the service settings (Settings → Source → Root Directory).
 4. Add environment variables under **Variables**:
    - `DATABASE_URL` = the Supabase connection string from step 2
-   - `OPENAI_API_KEY` = your OpenAI key
+   - `GEMINI_API_KEY` = your Gemini API key
    - `CORS_ORIGINS` = the Vercel URL you'll get in step 4 (you can add/update
      this after step 4 — Railway redeploys automatically on variable changes)
 5. Railway auto-detects the `Dockerfile` and builds/deploys it. Once live,
@@ -292,7 +292,7 @@ on variable save).
 ### 6. Load sample data on the deployed app (optional)
 
 From your machine, with the backend `.env` pointed at the same
-`DATABASE_URL` and `OPENAI_API_KEY` you used in Railway:
+`DATABASE_URL` and `GEMINI_API_KEY` you used in Railway:
 ```bash
 cd backend
 python3 scripts/seed_sample_data.py --api-url https://<your-backend-url>/api/v1
@@ -309,7 +309,7 @@ python3 scripts/seed_sample_data.py --api-url https://<your-backend-url>/api/v1
 
 If a request fails, check: (a) the Vercel env var points at your Railway URL
 with the exact `/api/v1` suffix, (b) `CORS_ORIGINS` on Railway exactly matches
-your Vercel URL (no trailing slash), (c) the Railway logs for `OPENAI_API_KEY`
+your Vercel URL (no trailing slash), (c) the Railway logs for `GEMINI_API_KEY`
 or database connection errors.
 
 ---
@@ -419,7 +419,7 @@ curl http://localhost:8000/api/v1/dashboard
 3. **Click "Use a sample profile"** to autofill Priya Shenoy's LinkedIn text,
    or paste your own.
 4. **Click "Generate contact."** The pipeline cleans the text, sends it to
-   OpenAI for structured extraction, generates an embedding, and checks for
+   Gemini for structured extraction, generates an embedding, and checks for
    duplicates — you're redirected to the new contact's page in a few seconds.
 5. **Look at the contact page**: the "Why they matter" callout is the
    relevance summary; skills/technologies/domains/capabilities are broken out
@@ -451,7 +451,7 @@ curl http://localhost:8000/api/v1/dashboard
 - **`sample_data/generated_entries/*.json`** are static fixtures matching the
   exact `ContactRead` response shape, included so the repo is inspectable
   without an API key. Running `scripts/seed_sample_data.py` against a live
-  backend generates real entries via OpenAI instead.
+  backend generates real entries via Gemini instead.
 - **ivfflat index quality** depends on having enough rows for its `lists`
   parameter to be well-tuned (set to 100 in the migration, reasonable up to a
   few thousand contacts). For a much larger rolodex, consider `hnsw` instead

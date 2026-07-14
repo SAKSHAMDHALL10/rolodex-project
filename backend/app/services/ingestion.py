@@ -3,7 +3,7 @@ Orchestrates the full ingestion pipeline:
 
   raw LinkedIn text/URL
     -> clean_profile_text
-    -> extract_profile (OpenAI structured output)
+    -> extract_profile (Gemini structured output)
     -> build_embedding_text + embed_text
     -> find_duplicates
     -> persist Contact row (or return duplicate candidates for the caller to decide)
