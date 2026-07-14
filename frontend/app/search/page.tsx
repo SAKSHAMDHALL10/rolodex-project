@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search as SearchIcon, SlidersHorizontal, AlertCircle } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { api, describeApiError } from "@/lib/api";
 import type { SearchResponse } from "@/types";
 import { SearchBox } from "@/components/rolodex/SearchBox";
 import { ContactCard } from "@/components/rolodex/ContactCard";
@@ -18,7 +18,9 @@ function SearchPageInner() {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<{ title: string; description: string } | null>(
+    null
+  );
 
   async function runSearch(q: string) {
     setQuery(q);
@@ -29,10 +31,10 @@ function SearchPageInner() {
       const res = await api.search.naturalLanguage(q);
       setResults(res);
     } catch (err) {
-      const message = err instanceof ApiError ? err.message : "Search failed. Is the backend running?";
-      setSearchError(message);
+      const described = describeApiError(err);
+      setSearchError(described);
       setResults(null);
-      push(message, "error");
+      push(described.description, "error");
     } finally {
       setLoading(false);
     }
@@ -87,8 +89,8 @@ function SearchPageInner() {
       ) : searchError ? (
         <EmptyState
           icon={AlertCircle}
-          title="Search failed"
-          description={searchError}
+          title={searchError.title}
+          description={searchError.description}
           actionLabel="Try again"
           onAction={() => runSearch(query)}
         />

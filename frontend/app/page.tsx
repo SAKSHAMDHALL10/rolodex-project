@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Sparkles, Clock, TrendingUp } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { api, describeApiError } from "@/lib/api";
 import type { DashboardStats } from "@/types";
 import { SearchBox } from "@/components/rolodex/SearchBox";
 import { StatCard } from "@/components/rolodex/StatCard";
@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const { push } = useToast();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ title: string; description: string } | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
@@ -28,12 +28,9 @@ export default function DashboardPage() {
       .dashboard()
       .then(setStats)
       .catch((err) => {
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : "Couldn't reach the Rolodex API. Is the backend running?";
-        setError(message);
-        push(message, "error");
+        const described = describeApiError(err);
+        setError(described);
+        push(described.description, "error");
       })
       .finally(() => setLoading(false));
   }, [push, retryKey]);
@@ -61,8 +58,8 @@ export default function DashboardPage() {
       {error && !loading && (
         <EmptyState
           icon={Sparkles}
-          title="Backend not reachable"
-          description={`${error} Start it with "docker compose up" or see the README for local setup.`}
+          title={error.title}
+          description={error.description}
           actionLabel="Try again"
           onAction={() => setRetryKey((k) => k + 1)}
         />

@@ -16,6 +16,44 @@ export class ApiError extends Error {
   }
 }
 
+export interface ApiErrorDescription {
+  title: string;
+  description: string;
+}
+
+/**
+ * Classifies a caught error into a distinct title + description, instead of
+ * treating every failure as a generic "Backend not reachable". The backend
+ * uses specific status codes for specific failure classes (see
+ * app/main.py / app/routers/*.py): 502 for Gemini/AI extraction problems,
+ * 503 for database problems, and our own client (ApiError status 0) for a
+ * misconfigured NEXT_PUBLIC_API_URL. Only a genuine network-level failure
+ * (fetch() itself throws - DNS failure, connection refused, CORS block with
+ * no response at all) is NOT an ApiError, and that's the only case that
+ * actually means "the backend is unreachable".
+ */
+export function describeApiError(err: unknown): ApiErrorDescription {
+  if (err instanceof ApiError) {
+    if (err.status === 0) {
+      return { title: "Configuration error", description: err.message };
+    }
+    if (err.status === 502) {
+      return { title: "AI extraction unavailable", description: err.message };
+    }
+    if (err.status === 503) {
+      return { title: "Database unavailable", description: err.message };
+    }
+    return { title: "Request failed", description: err.message };
+  }
+  return {
+    title: "Backend not reachable",
+    description:
+      "Couldn't reach the Rolodex API at all. If this is a deployed environment, check " +
+      "that NEXT_PUBLIC_API_URL points to your running backend. If you're developing " +
+      'locally, start the backend with "docker compose up" or see the README.',
+  };
+}
+
 /**
  * Validates and normalizes NEXT_PUBLIC_API_URL into an absolute base URL.
  *

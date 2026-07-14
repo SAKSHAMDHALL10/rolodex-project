@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, Contact2, Search } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { api, describeApiError } from "@/lib/api";
 import type { ContactListItem } from "@/types";
 import { ContactCard } from "@/components/rolodex/ContactCard";
 import { ContactGridSkeleton } from "@/components/rolodex/Skeletons";
@@ -13,7 +13,9 @@ import { useToast } from "@/hooks/useToast";
 export default function ContactsPage() {
   const { push } = useToast();
   const [contacts, setContacts] = useState<ContactListItem[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ title: string; description: string } | null>(
+    null
+  );
   const [filter, setFilter] = useState("");
   const [retryKey, setRetryKey] = useState(0);
 
@@ -23,9 +25,9 @@ export default function ContactsPage() {
       .list({ limit: 200 })
       .then(setContacts)
       .catch((err) => {
-        const message = err instanceof ApiError ? err.message : "Couldn't load contacts.";
-        push(message, "error");
-        setLoadError(message);
+        const described = describeApiError(err);
+        push(described.description, "error");
+        setLoadError(described);
       });
   }, [push, retryKey]);
 
@@ -65,8 +67,8 @@ export default function ContactsPage() {
       {loadError ? (
         <EmptyState
           icon={AlertCircle}
-          title="Couldn't load your contacts"
-          description={loadError}
+          title={loadError.title}
+          description={loadError.description}
           actionLabel="Try again"
           onAction={() => setRetryKey((k) => k + 1)}
         />

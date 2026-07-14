@@ -59,6 +59,22 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+@app.exception_handler(SQLAlchemyError)
+async def database_exception_handler(request: Request, exc: SQLAlchemyError):
+    """
+    Any endpoint that touches the database (not just /health/ready) should
+    fail with a clean, distinguishable 503 rather than an unhandled 500 with
+    no body - the frontend relies on this status code to tell "the database
+    is having a problem" apart from "Gemini is having a problem" (502) or
+    "the backend is completely unreachable" (no HTTP response at all).
+    """
+    logger.error("Unhandled database error on %s: %s", request.url.path, exc)
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={"detail": "Database error. Check server logs for details."},
+    )
+
+
 @app.get("/health", tags=["meta"])
 def health():
     """

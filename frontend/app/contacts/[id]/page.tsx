@@ -11,7 +11,7 @@ import {
   MapPin,
   Trash2,
 } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, describeApiError } from "@/lib/api";
 import type { ContactRead } from "@/types";
 import { initials } from "@/lib/utils";
 import { ExperienceTimeline, EducationList } from "@/components/rolodex/Timeline";
@@ -26,7 +26,9 @@ export default function ContactDetailPage() {
   const { push } = useToast();
   const [contact, setContact] = useState<ContactRead | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ title: string; description: string } | null>(
+    null
+  );
   const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
@@ -39,10 +41,9 @@ export default function ContactDetailPage() {
         if (err instanceof ApiError && err.status === 404) {
           setNotFound(true);
         } else {
-          const message =
-            err instanceof ApiError ? err.message : "Couldn't load this contact.";
-          setLoadError(message);
-          push(message, "error");
+          const described = describeApiError(err);
+          setLoadError(described);
+          push(described.description, "error");
         }
       });
   }, [params.id, retryKey, push]);
@@ -88,8 +89,8 @@ export default function ContactDetailPage() {
   if (loadError) {
     return (
       <div className="flex flex-col items-center py-20 text-center">
-        <p className="font-display text-xl text-ink">Couldn&apos;t load this contact</p>
-        <p className="mt-1.5 max-w-sm text-sm text-ink-muted">{loadError}</p>
+        <p className="font-display text-xl text-ink">{loadError.title}</p>
+        <p className="mt-1.5 max-w-sm text-sm text-ink-muted">{loadError.description}</p>
         <div className="mt-5 flex gap-2">
           <Button variant="secondary" onClick={() => setRetryKey((k) => k + 1)}>
             Try again

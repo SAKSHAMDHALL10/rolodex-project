@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, ClipboardPaste } from "lucide-react";
-import { api, ApiError } from "@/lib/api";
+import { api, describeApiError } from "@/lib/api";
 import type { DuplicateCandidate } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -57,12 +57,7 @@ export default function IngestPage() {
         router.push(`/contacts/${res.contact.id}`);
       }
     } catch (err) {
-      push(
-        err instanceof ApiError
-          ? err.message
-          : "Couldn't reach the Rolodex API. Is the backend running?",
-        "error"
-      );
+      push(describeApiError(err).description, "error");
     } finally {
       setLoading(false);
     }
@@ -80,8 +75,8 @@ export default function IngestPage() {
         push(`${res.contact.full_name} added to your rolodex.`, "success");
         router.push(`/contacts/${res.contact.id}`);
       }
-    } catch {
-      push("Couldn't create the contact.", "error");
+    } catch (err) {
+      push(describeApiError(err).description, "error");
     } finally {
       setLoading(false);
       setDuplicates(null);
@@ -100,8 +95,11 @@ export default function IngestPage() {
       const merged = await api.contacts.merge(existingId, created.contact.id);
       push(`Merged into ${merged.full_name}.`, "success");
       router.push(`/contacts/${merged.id}`);
-    } catch {
-      push("Couldn't merge automatically — opening the existing contact instead.", "error");
+    } catch (err) {
+      push(
+        `Couldn't merge automatically (${describeApiError(err).description}) - opening the existing contact instead.`,
+        "error"
+      );
       router.push(`/contacts/${existingId}`);
     } finally {
       setLoading(false);
