@@ -1,0 +1,61 @@
+Home My Network Jobs Messaging Notifications
+
+Dr. Lena Park
+Applied ML Scientist, Recommendation Systems @ Meta | PhD Stanford | Prev. Netflix
+Menlo Park, California · 3rd+
+8,900 followers
+Follow  Connect  Message  More
+
+About
+I've spent the last eight years making recommendation systems less
+annoying and more useful, first on Netflix's row-ranking team and now
+leading ranking research for Reels at Meta. My PhD (Stanford, advised by
+Prof. someone-you've-heard-of) was on off-policy evaluation for
+recommender systems, which turned out to be extremely relevant to my day
+job in ways I did not expect at 24.
+
+Right now I split my time between publishing (6 papers at RecSys/KDD in
+the last 3 years) and shipping ranking models that actually move
+engagement metrics in A/B tests, which are two very different skill sets
+that people rarely have both of. I review for RecSys and NeurIPS most
+years, and I'm on the lookout for PhD interns for next summer.
+
+Experience
+Applied ML Scientist, Reels Ranking
+Meta · Full-time
+Mar 2023 - Present · 2 yrs 4 mos
+Menlo Park, CA
+Lead ranking model research for Reels recommendations. Shipped a
+multi-task ranking model that improved watch-time by 3.1% in production
+A/B test across the whole surface.
+
+Senior Research Scientist
+Netflix · Full-time
+Sep 2019 - Feb 2023 · 3 yrs 6 mos
+Los Gatos, CA
+Row-ranking and off-policy evaluation for the Netflix homepage. Built the
+counterfactual evaluation framework used to validate ranking changes
+before full rollout.
+
+Research Intern
+Google Brain · Internship
+Summer 2018
+
+Education
+Stanford University
+PhD, Computer Science (Machine Learning) · 2015 - 2019
+
+Seoul National University
+B.S., Computer Science · 2011 - 2015
+
+Publications
+6 publications in RecSys, KDD, WWW on off-policy evaluation and
+recommendation ranking (list available on Google Scholar)
+
+Skills
+Machine Learning · Recommendation Systems · PyTorch · Off-policy Evaluation
+· A/B Testing · Causal Inference · Research Leadership · Ranking Models
+
+Show all 47 skills
+2 mutual connections
+Like Comment Share

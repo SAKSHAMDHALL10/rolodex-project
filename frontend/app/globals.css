@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Design tokens — see README "Design system" section for rationale.
+  Dark is the primary/default surface (this is a tool people keep open all
+  day next to an editor); light is a fully-specified secondary mode, not an
+  afterthought.
+*/
+:root,
+.dark {
+  --canvas: #14151c;
+  --surface: #1c1e29;
+  --surface-raised: #242631;
+  --hairline: #2c2f3d;
+  --ink: #f1efea;
+  --ink-muted: #9296a8;
+  --ink-faint: #5b5f70;
+  --signal: #6c63ff;
+  --signal-soft: rgba(108, 99, 255, 0.16);
+  --signal-strong: #8b84ff;
+  --tab: #e8a33d;
+  --tab-soft: rgba(232, 163, 61, 0.16);
+  --danger: #ef6f6f;
+}
+
+.light {
+  --canvas: #f7f6f2;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --hairline: #e5e2da;
+  --ink: #201f1c;
+  --ink-muted: #6b6a63;
+  --ink-faint: #a3a196;
+  --signal: #5147e0;
+  --signal-soft: rgba(81, 71, 224, 0.1);
+  --signal-strong: #4038c4;
+  --tab: #b5730a;
+  --tab-soft: rgba(181, 115, 10, 0.12);
+  --danger: #c94f4f;
+}
+
+* {
+  border-color: var(--hairline);
+}
+
+html {
+  color-scheme: dark;
+}
+html.light {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+}
+
+::selection {
+  background-color: var(--signal-soft);
+  color: var(--ink);
+}
+
+/* Visible keyboard focus everywhere, styled to match the accent rather than
+   the browser default blue ring. */
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Loading skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-raised) 0%,
+    var(--hairline) 50%,
+    var(--surface-raised) 100%
+  );
+  background-size: 800px 100%;
+}
+
+/* Index-card "tab" cutout — the signature element, see components/rolodex/ContactCard.tsx */
+.card-tab-notch {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+}

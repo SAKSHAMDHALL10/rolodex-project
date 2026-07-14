@@ -1,0 +1,29 @@
+# --- Python / backend ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# --- Env files (never commit secrets) ---
+.env
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# --- Node / frontend ---
+node_modules/
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# --- OS / editor ---
+.DS_Store
+.idea/
+.vscode/
+
+# --- Docker ---
+*.pid

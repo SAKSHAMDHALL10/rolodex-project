@@ -1,0 +1,459 @@
+# AI Rolodex Agent
+
+An AI-powered searchable rolodex. Paste a LinkedIn profile in, get back a
+structured, semantically-searchable "why this person matters" entry — not
+just a saved contact card.
+
+This is **not** a contact manager. It's a knowledge base of professional
+relationships, built so a team can ask *"who do we know who does X?"* and get
+back the right people, ranked by relevance.
+
+---
+
+## How it works
+
+```
+LinkedIn profile text/export
+        │
+        ▼
+  clean_profile_text()        strips nav chrome, ads, duplicate lines
+        │
+        ▼
+  extract_profile()           OpenAI Responses API, strict JSON schema output
+        │                     → identity, capabilities, and (the hard part)
+        │                       *relevance*: why someone would search for them
+        ▼
+  build_embedding_text()      concatenates summary + relevance + skills
+        │                     + capabilities
+        ▼
+  embed_text()                OpenAI Embeddings API → 1536-dim vector
+        │
+        ▼
+  find_duplicates()           exact URL match → fuzzy name match → cosine
+        │                     similarity against existing embeddings
+        ▼
+  Postgres (pgvector)         one row per contact, JSONB list columns,
+                               ivfflat index for semantic search
+```
+
+Search works two ways:
+- **Structured filters** — role, company, industry, skills, technologies, tags.
+- **Semantic search** — cosine similarity over the embedding column.
+- **Natural language** ("who has healthcare experience?") is parsed by the LLM
+  into a combination of both, then executed as a hybrid query.
+
+---
+
+## Tech stack
+
+| Layer      | Choice                                                              |
+|------------|----------------------------------------------------------------------|
+| Frontend   | Next.js 15 (App Router), React 19, TypeScript, TailwindCSS           |
+| Backend    | FastAPI, SQLAlchemy 2.0, Pydantic v2                                  |
+| Database   | PostgreSQL 16 + pgvector                                             |
+| AI         | OpenAI Responses API (structured JSON output) + Embeddings API       |
+| Deployment | Vercel (frontend) · Railway/Render (backend) · Supabase (database)   |
+
+---
+
+## Project structure
+
+```
+rolodex-agent/
+├── backend/
+│   ├── app/
+│   │   ├── core/            # config, database engine/session
+│   │   ├── models/           # SQLAlchemy models (Contact, SearchLog)
+│   │   ├── schemas/          # Pydantic request/response contracts
+│   │   ├── services/         # cleaning, extraction, embeddings, dedup, search, ingestion
+│   │   ├── routers/           # /contacts, /search, /dashboard
+│   │   └── main.py
+│   ├── migrations/001_init.sql
+│   ├── sample_data/
+│   │   ├── linkedin_profiles/     # 5 raw sample profiles (messy paste format)
+│   │   └── generated_entries/     # 5 example extraction outputs
+│   ├── tests/
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── .env.example
+├── frontend/
+│   ├── app/                  # dashboard, /search, /contacts, /contacts/[id], /ingest
+│   ├── components/           # ui/ (primitives), rolodex/ (feature components), layout/
+│   ├── hooks/                # theme + toast providers
+│   ├── lib/                  # api client, utils
+│   ├── types/                # TS types mirroring backend schemas
+│   ├── package.json
+│   ├── Dockerfile
+│   └── .env.example
+└── docker-compose.yml         # full local stack: db + backend + frontend
+```
+
+### Design system
+
+Dark-first, built around a physical rolodex/index-card metaphor rather than a
+generic SaaS dashboard: cards carry a die-cut "index tab" with the contact's
+initial, and the relevance summary is rendered as a highlighter-style
+annotation — the one intentionally bold element on an otherwise quiet,
+disciplined UI. Type pairs a characterful serif (Fraunces) for names/headings
+with Inter for body text and IBM Plex Mono for tags, stats, and metadata.
+Colors are a warm-ivory-on-ink-navy palette with an indigo "signal" accent and
+an amber "tab" accent (see `frontend/app/globals.css` for the token values).
+
+---
+
+## HOW TO RUN LOCALLY
+
+These steps assume no prior setup — just Docker, or Python + Node if you
+prefer running things natively.
+
+### Option A — Docker Compose (fastest)
+
+1. **Install Docker Desktop** if you don't have it: https://www.docker.com/products/docker-desktop/
+2. **Get an OpenAI API key**: go to https://platform.openai.com/api-keys, sign
+   in, click "Create new secret key", copy it (starts with `sk-`).
+3. **Clone/unzip the project** and open a terminal in its root folder.
+4. **Configure the backend:**
+   ```bash
+   cd backend
+   cp .env.example .env
+   ```
+   Open `backend/.env` and paste your key into `OPENAI_API_KEY=`.
+5. **Configure the frontend:**
+   ```bash
+   cd ../frontend
+   cp .env.example .env
+   ```
+   The default `NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1` is correct
+   for local Docker use — leave it as is.
+
+   > **Note:** when running via `docker compose`, the frontend container
+   > actually gets `NEXT_PUBLIC_API_URL` from the `build.args` in
+   > `docker-compose.yml`, not from `frontend/.env` — Next.js inlines
+   > `NEXT_PUBLIC_*` variables into the client bundle at *build* time, so they
+   > have to be passed as a Docker build arg rather than a runtime container
+   > variable. `frontend/.env` is still used by `npm run dev` (Option B below).
+   > If you change the backend's port or host, update the `args:` value in
+   > `docker-compose.yml` and re-run `docker compose up --build`.
+6. **Start everything** from the project root:
+   ```bash
+   cd ..
+   docker compose up --build
+   ```
+   This starts Postgres with pgvector already installed (via the
+   `pgvector/pgvector:pg16` image), runs the `001_init.sql` migration
+   automatically on first boot, then starts the backend on port 8000 and the
+   frontend on port 3000.
+7. **Open the app:** http://localhost:3000
+8. **Load the sample profiles** (optional but recommended for a first look):
+   with the stack running, in a new terminal:
+   ```bash
+   cd backend
+   python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+   pip install -r requirements.txt
+   python3 scripts/seed_sample_data.py
+   ```
+   This ingests the 5 sample LinkedIn profiles in `sample_data/linkedin_profiles/`
+   through the real pipeline (OpenAI extraction + embeddings), so you'll see
+   real generated rolodex entries rather than the static fixture JSON.
+
+To stop everything: `docker compose down` (add `-v` to also wipe the database).
+
+### Option B — Run natively (no Docker)
+
+1. **Install PostgreSQL 16** locally (e.g. `brew install postgresql@16` on
+   macOS, or use your OS package manager).
+2. **Enable pgvector.** The easiest path is Docker just for the database:
+   ```bash
+   docker run -d --name rolodex-db -p 5432:5432 \
+     -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=rolodex \
+     pgvector/pgvector:pg16
+   ```
+   If you're not using Docker at all, install the `pgvector` extension for
+   your Postgres build (see https://github.com/pgvector/pgvector#installation),
+   then run:
+   ```sql
+   CREATE EXTENSION vector;
+   ```
+3. **Run the migration:**
+   ```bash
+   psql postgresql://postgres:postgres@localhost:5432/rolodex -f backend/migrations/001_init.sql
+   ```
+4. **Set up the backend:**
+   ```bash
+   cd backend
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   cp .env.example .env   # then paste your OPENAI_API_KEY into .env
+   uvicorn app.main:app --reload --port 8000
+   ```
+   Visit http://localhost:8000/docs to confirm the API is up (interactive
+   Swagger UI).
+5. **Set up the frontend**, in a second terminal:
+   ```bash
+   cd frontend
+   npm install
+   cp .env.example .env
+   npm run dev
+   ```
+6. **Open** http://localhost:3000 and paste in a LinkedIn profile (use the
+   "Use a sample profile" button on the Add Contact page for a quick test).
+
+### Running tests
+
+```bash
+cd backend
+source .venv/bin/activate
+pytest -v
+```
+
+The included tests cover input cleaning, the OpenAI structured-output JSON
+schema lockdown, fuzzy name-matching thresholds, schema validation, and API
+route registration/health. They don't require a live Postgres or OpenAI key.
+Full end-to-end ingestion (`/contacts/ingest`) is exercised manually via the
+UI or the example `curl` requests below, since it requires both a live
+database and a real `OPENAI_API_KEY`.
+
+---
+
+## HOW TO DEPLOY FOR FREE
+
+Frontend → **Vercel** · Backend → **Railway** (or **Render** if you'd rather)
+· Database → **Supabase**. All three have usable free tiers.
+
+### 1. Push the project to GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit: AI Rolodex Agent"
+```
+Create a new repository on https://github.com/new, then:
+```bash
+git remote add origin https://github.com/<your-username>/rolodex-agent.git
+git branch -M main
+git push -u origin main
+```
+
+### 2. Database — Supabase
+
+1. Go to https://supabase.com, sign up, click **New project**.
+2. Pick a name, a strong database password (save it), and a region close to
+   you. Wait ~2 minutes for provisioning.
+3. Once ready, go to **SQL Editor** → **New query**, paste in the full
+   contents of `backend/migrations/001_init.sql`, and run it. Supabase
+   Postgres ships with `pgvector` pre-installed, so `CREATE EXTENSION vector`
+   will succeed immediately.
+4. Go to **Project Settings → Database → Connection string**, copy the URI
+   (mode: "Session", not "Transaction", for a simple deployment), and convert
+   it to SQLAlchemy's driver form:
+   ```
+   postgresql+psycopg://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+   ```
+
+### 3. Backend — Railway
+
+1. Go to https://railway.app, sign up, and connect your GitHub account.
+2. **New Project → Deploy from GitHub repo** → select your `rolodex-agent`
+   repo.
+3. Railway will detect multiple folders; set the **Root Directory** to
+   `backend` in the service settings (Settings → Source → Root Directory).
+4. Add environment variables under **Variables**:
+   - `DATABASE_URL` = the Supabase connection string from step 2
+   - `OPENAI_API_KEY` = your OpenAI key
+   - `CORS_ORIGINS` = the Vercel URL you'll get in step 4 (you can add/update
+     this after step 4 — Railway redeploys automatically on variable changes)
+5. Railway auto-detects the `Dockerfile` and builds/deploys it. Once live,
+   copy the generated public URL (Settings → Networking → **Generate Domain**),
+   e.g. `https://rolodex-backend-production.up.railway.app`.
+6. Confirm it's working: visit `https://<your-backend-url>/health` — you
+   should see `{"status":"ok",...}`.
+
+   *(If you'd rather use Render instead: New → Web Service → connect the repo
+   → Root Directory `backend` → Render auto-detects the Dockerfile → add the
+   same environment variables → deploy.)*
+
+### 4. Frontend — Vercel
+
+1. Go to https://vercel.com, sign up, click **Add New → Project**, and import
+   your GitHub repo.
+2. Set **Root Directory** to `frontend` in the import settings.
+3. Add an environment variable:
+   - `NEXT_PUBLIC_API_URL` = `https://<your-backend-url>/api/v1`
+4. Click **Deploy**. Vercel builds and gives you a URL like
+   `https://rolodex-agent.vercel.app`.
+
+### 5. Connect the two (update CORS)
+
+Go back to Railway (or Render) → your backend service → **Variables** →
+update `CORS_ORIGINS` to your real Vercel URL, e.g.
+`https://rolodex-agent.vercel.app`. Redeploy (Railway does this automatically
+on variable save).
+
+### 6. Load sample data on the deployed app (optional)
+
+From your machine, with the backend `.env` pointed at the same
+`DATABASE_URL` and `OPENAI_API_KEY` you used in Railway:
+```bash
+cd backend
+python3 scripts/seed_sample_data.py --api-url https://<your-backend-url>/api/v1
+```
+
+### 7. Test the deployed application
+
+1. Open your Vercel URL.
+2. Go to **Add contact**, click "Use a sample profile", click **Generate contact**.
+3. You should land on a new contact page with extracted skills, capabilities,
+   and a relevance summary within a few seconds.
+4. Go to **Search**, type "who has payments infrastructure experience?", and
+   confirm it returns the contact you just added.
+
+If a request fails, check: (a) the Vercel env var points at your Railway URL
+with the exact `/api/v1` suffix, (b) `CORS_ORIGINS` on Railway exactly matches
+your Vercel URL (no trailing slash), (c) the Railway logs for `OPENAI_API_KEY`
+or database connection errors.
+
+---
+
+## API reference — example requests & responses
+
+Interactive docs (Swagger UI) are always available at `/docs` on the running
+backend (e.g. http://localhost:8000/docs).
+
+### Ingest a profile
+
+```bash
+curl -X POST http://localhost:8000/api/v1/contacts/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+        "source_type": "text",
+        "linkedin_url": "https://www.linkedin.com/in/priya-shenoy-example",
+        "raw_text": "Priya Shenoy\nSenior Backend Engineer @ Finlynk...(full pasted profile text)"
+      }'
+```
+
+Response (new contact):
+```json
+{
+  "status": "created",
+  "contact": {
+    "id": "b2f1c2b0-...",
+    "full_name": "Priya Shenoy",
+    "current_title": "Senior Backend Engineer",
+    "current_company": "Finlynk",
+    "relevance_summary": "Priya is the person to talk to when a payments or ledger system needs to be provably correct...",
+    "relevance_tags": ["FinTech specialist", "Payments infrastructure", "Distributed systems"],
+    "...": "see backend/sample_data/generated_entries/01_priya_shenoy.json for the full shape"
+  },
+  "duplicates": []
+}
+```
+
+Response (likely duplicate found instead of creating):
+```json
+{
+  "status": "possible_duplicate",
+  "contact": null,
+  "duplicates": [
+    {
+      "contact": { "id": "...", "full_name": "Priya Shenoy", "...": "..." },
+      "match_reasons": ["Exact LinkedIn URL match"],
+      "similarity_score": 1.0
+    }
+  ]
+}
+```
+
+### Natural-language search
+
+```bash
+curl -X POST http://localhost:8000/api/v1/search/natural-language \
+  -H "Content-Type: application/json" \
+  -d '{"query": "who has healthcare experience?"}'
+```
+
+```json
+{
+  "query": "who has healthcare experience?",
+  "interpreted_filters": {
+    "industry": "Healthcare",
+    "skills": [],
+    "technologies": [],
+    "tags": ["Healthcare domain expertise"]
+  },
+  "results": [
+    { "contact": { "full_name": "Sofia Ibarra", "...": "..." }, "score": 0.87, "matched_on": ["semantic"] }
+  ],
+  "total": 1
+}
+```
+
+### Dashboard stats
+
+```bash
+curl http://localhost:8000/api/v1/dashboard
+```
+
+### Full endpoint list
+
+| Method | Path                              | Purpose                                   |
+|--------|-----------------------------------|--------------------------------------------|
+| POST   | `/api/v1/contacts/ingest`         | Extract + create (returns duplicates if found) |
+| POST   | `/api/v1/contacts/ingest/force`   | Same, but skips duplicate detection        |
+| GET    | `/api/v1/contacts`                | List contacts (paginated)                  |
+| GET    | `/api/v1/contacts/{id}`           | Get one contact                            |
+| PATCH  | `/api/v1/contacts/{id}`           | Update notes / relevance tags              |
+| DELETE | `/api/v1/contacts/{id}`           | Delete a contact                           |
+| POST   | `/api/v1/contacts/merge`          | Merge a duplicate into an existing contact |
+| POST   | `/api/v1/search`                  | Structured + optional semantic search      |
+| POST   | `/api/v1/search/natural-language` | AI search box (LLM-parsed filters)         |
+| GET    | `/api/v1/dashboard`               | Aggregate stats for the homepage           |
+| GET    | `/health`                         | Health check                               |
+
+---
+
+## DEMO WALKTHROUGH
+
+1. **Open the dashboard** — you'll see total contacts, top skills/industries,
+   and a search box front and center.
+2. **Click "Add contact"** in the sidebar (or go to `/ingest`).
+3. **Click "Use a sample profile"** to autofill Priya Shenoy's LinkedIn text,
+   or paste your own.
+4. **Click "Generate contact."** The pipeline cleans the text, sends it to
+   OpenAI for structured extraction, generates an embedding, and checks for
+   duplicates — you're redirected to the new contact's page in a few seconds.
+5. **Look at the contact page**: the "Why they matter" callout is the
+   relevance summary; skills/technologies/domains/capabilities are broken out
+   separately in the sidebar; experience renders as a timeline.
+6. **Go to Search** and type something like *"who has built payments
+   infrastructure?"* — the AI search box converts this into filters (shown
+   above the results) plus a semantic query, and returns matching contacts.
+7. **View matching contacts** as index cards, each with its top relevance tag
+   shown as a highlighter-style callout.
+8. **Open a contact and add a note** ("Met at Hackathon", "Referral", etc.) in
+   the Connection Notes section — this is saved via `PATCH /contacts/{id}`.
+9. **Add a second, similar contact** (e.g. paste the same profile again, or a
+   near-duplicate) — you'll see the duplicate-detection modal instead of a
+   silent second entry, with the option to merge.
+10. **Repeat the search** from step 6 — the new/merged contact now shows up,
+    demonstrating that semantic search picks up newly ingested profiles
+    immediately.
+
+---
+
+## Known limitations / honest notes
+
+- **Fetching a LinkedIn URL directly is not implemented.** LinkedIn requires
+  an authenticated session to view full profile data, so `source_type: "url"`
+  intentionally raises a clear error rather than silently scraping or
+  hallucinating a profile. Paste the profile's text or an exported copy
+  instead (the UI's ingest form is built around pasting text, with the URL
+  field kept only for reference/dedup purposes).
+- **`sample_data/generated_entries/*.json`** are static fixtures matching the
+  exact `ContactRead` response shape, included so the repo is inspectable
+  without an API key. Running `scripts/seed_sample_data.py` against a live
+  backend generates real entries via OpenAI instead.
+- **ivfflat index quality** depends on having enough rows for its `lists`
+  parameter to be well-tuned (set to 100 in the migration, reasonable up to a
+  few thousand contacts). For a much larger rolodex, consider `hnsw` instead
+  (supported by pgvector 0.5+) or re-tuning `lists` to roughly
+  `sqrt(row_count)`.

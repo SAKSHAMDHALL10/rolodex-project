@@ -1,0 +1,90 @@
+{
+  "id": "16363e5b-a91f-4f20-b7b8-71a9e3303a5b",
+  "full_name": "Priya Shenoy",
+  "headline": "Senior Backend Engineer @ Finlynk | Ex-Razorpay | Distributed Payments Systems",
+  "linkedin_url": "https://www.linkedin.com/in/priya-shenoy-example",
+  "photo_url": null,
+  "current_company": "Finlynk",
+  "current_title": "Senior Backend Engineer",
+  "location": "Bengaluru, Karnataka, India",
+  "industry": "FinTech / Payments Infrastructure",
+  "summary": "Backend engineer with 9 years building payments infrastructure. Leads the payments team at Finlynk, previously built the core payouts engine at Razorpay. Focused on correctness, ledger integrity, and distributed-systems reliability over cleverness.",
+  "experience": [
+    {
+      "title": "Senior Backend Engineer",
+      "company": "Finlynk",
+      "start_date": "2022-01",
+      "end_date": null,
+      "description": "Leads the payments infrastructure team (6 engineers). Redesigned the ledger and reconciliation pipeline (Kafka + Postgres, exactly-once semantics), cutting settlement mismatches by 94% and audit close time from 5 days to 6 hours."
+    },
+    {
+      "title": "Backend Engineer",
+      "company": "Razorpay",
+      "start_date": "2018-06",
+      "end_date": "2021-12",
+      "description": "Built and scaled the payouts engine handling ~2M transactions/day. Migrated a monolith payout service to an event-driven architecture on Kafka. Mentored 4 junior engineers."
+    },
+    {
+      "title": "Software Engineer",
+      "company": "Freshworks",
+      "start_date": "2016-08",
+      "end_date": "2018-05",
+      "description": "Worked on billing systems for the CRM product."
+    }
+  ],
+  "education": [
+    {
+      "school": "National Institute of Technology Karnataka (NITK), Surathkal",
+      "degree": "B.Tech",
+      "field_of_study": "Computer Science",
+      "start_year": "2012",
+      "end_year": "2016"
+    }
+  ],
+  "skills": [
+    "Distributed Systems",
+    "Idempotent System Design",
+    "System Design Mentoring",
+    "Incident Response"
+  ],
+  "technologies": [
+    "Kafka",
+    "PostgreSQL",
+    "Go",
+    "Python",
+    "AWS"
+  ],
+  "domains": [
+    "FinTech",
+    "Payments"
+  ],
+  "capabilities": [
+    "Can architect exactly-once payment/ledger pipelines",
+    "Can lead incident response for payments outages",
+    "Can mentor engineers on distributed systems fundamentals"
+  ],
+  "interests": [
+    "Payments infrastructure",
+    "Idempotency",
+    "Ledger correctness"
+  ],
+  "relevance_summary": "Priya is the person to talk to when a payments or ledger system needs to be provably correct, not just fast. She's led two major reconciliation rewrites and is strong on Kafka-based exactly-once processing. Worth reaching out for backend architecture reviews on anything involving money movement, or for on-call/incident-response process design in a fintech context.",
+  "relevance_tags": [
+    "FinTech specialist",
+    "Payments infrastructure",
+    "Distributed systems",
+    "Senior backend engineer",
+    "Incident response lead"
+  ],
+  "connection_notes": [
+    {
+      "note_type": "met_at_hackathon",
+      "text": "Met at the Bengaluru FinTech builders meetup, Feb 2026.",
+      "created_at": "2026-07-13T16:26:19.326356+00:00"
+    }
+  ],
+  "source_type": "text",
+  "created_at": "2026-07-13T16:26:19.326356+00:00",
+  "updated_at": "2026-07-13T16:26:19.326356+00:00",
+  "embedding": "<1536-dim float vector, omitted for readability \u2014 see /docs response for real shape>"
+}

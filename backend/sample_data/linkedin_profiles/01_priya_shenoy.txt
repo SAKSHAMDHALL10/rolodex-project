@@ -1,0 +1,58 @@
+Skip to main content
+Home My Network Jobs Messaging Notifications
+
+Priya Shenoy
+Senior Backend Engineer @ Finlynk | Ex-Razorpay | Distributed Payments Systems
+Bengaluru, Karnataka, India · 3rd+
+500+ connections
+Follow  Connect  Message
+
+About
+I build the boring, unglamorous infrastructure that makes payments actually
+work at 2am on a Sunday. Nine years writing backend systems for companies
+that move real money, most recently leading the ledger-reconciliation
+rewrite at Finlynk that cut settlement mismatches by 94%. Before that I
+spent four years at Razorpay building the core payouts engine.
+
+I care about correctness more than cleverness, and I've become the person
+people page when the ledger doesn't balance. Happy to talk shop about
+idempotency, double-entry accounting in code, or why your webhook retry
+logic is probably wrong.
+
+Experience
+Senior Backend Engineer
+Finlynk · Full-time
+Jan 2022 - Present · 3 yrs
+Bengaluru, India
+Lead the payments infrastructure team (6 engineers). Redesigned the ledger
+and reconciliation pipeline (Kafka + Postgres, exactly-once semantics),
+cutting settlement mismatches by 94% and audit close time from 5 days to 6
+hours. On-call lead for the payments org.
+
+Backend Engineer
+Razorpay · Full-time
+Jun 2018 - Dec 2021 · 3 yrs 7 mos
+Built and scaled the payouts engine handling ~2M transactions/day. Migrated
+a monolith payout service to an event-driven architecture on Kafka.
+Mentored 4 junior engineers.
+
+Software Engineer
+Freshworks · Full-time
+Aug 2016 - May 2018 · 1 yr 10 mos
+Worked on billing systems for the CRM product.
+
+Education
+National Institute of Technology Karnataka (NITK), Surathkal
+B.Tech, Computer Science · 2012 - 2016
+
+Licenses & Certifications
+AWS Certified Solutions Architect - Professional
+
+Skills
+Distributed Systems · Kafka · PostgreSQL · Payments Infrastructure ·
+Idempotent System Design · Go · Python · System Design Mentoring ·
+Incident Response
+
+3 mutual connections
+See more See less
+Like Comment Share

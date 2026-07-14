@@ -1,0 +1,81 @@
+{
+  "id": "b28376b8-06c2-4684-887f-335234a4c3c5",
+  "full_name": "Daniel Okafor",
+  "headline": "Head of Developer Relations @ Stellarpay | Ex-Twilio, Ex-Stripe | Conference speaker",
+  "linkedin_url": "https://www.linkedin.com/in/daniel-okafor-example",
+  "photo_url": null,
+  "current_company": "Stellarpay",
+  "current_title": "Head of Developer Relations",
+  "location": "Toronto, Ontario, Canada",
+  "industry": "Developer Tools / API Platforms",
+  "summary": "Developer relations leader with a decade of experience building DevRel functions and developer-facing content at Stripe, Twilio, and now Stellarpay, where he built the DevRel org from scratch. Frequent conference speaker and SDK/API-experience specialist.",
+  "experience": [
+    {
+      "title": "Head of Developer Relations",
+      "company": "Stellarpay",
+      "start_date": "2022-04",
+      "end_date": null,
+      "description": "Built the DevRel function from 1 to 9 people across 3 regions. Launched the public API docs rewrite and a new SDK generation pipeline (7 languages), cutting time-to-first-API-call from 45 min to 6 min."
+    },
+    {
+      "title": "Senior Developer Advocate, Platform",
+      "company": "Twilio",
+      "start_date": "2018-02",
+      "end_date": "2022-03",
+      "description": "Led platform DevRel for Twilio's Programmable Voice and Video APIs. Regular speaker at SIGNAL, KubeCon, and regional dev meetups."
+    },
+    {
+      "title": "Developer Advocate",
+      "company": "Stripe",
+      "start_date": "2015-06",
+      "end_date": "2018-01",
+      "description": "Early DevRel hire (#340). Wrote integration guides and sample apps for the Payments and Connect APIs."
+    }
+  ],
+  "education": [
+    {
+      "school": "University of Waterloo",
+      "degree": "B.Math",
+      "field_of_study": "Computer Science",
+      "start_year": "2011",
+      "end_year": "2015"
+    }
+  ],
+  "skills": [
+    "Developer Relations",
+    "Technical Writing",
+    "Public Speaking",
+    "Community Building"
+  ],
+  "technologies": [
+    "Node.js"
+  ],
+  "domains": [
+    "Developer Tools",
+    "API Platforms",
+    "Payments"
+  ],
+  "capabilities": [
+    "Can build a Developer Relations org from zero",
+    "Can design SDK-generation pipelines across multiple languages",
+    "Can advise on developer-experience / API-onboarding funnels"
+  ],
+  "interests": [
+    "Developer experience",
+    "Public speaking",
+    "API design"
+  ],
+  "relevance_summary": "Daniel is the go-to contact for building or scaling a Developer Relations function: he's done it twice (Stripe, then from scratch at Stellarpay) after cutting his teeth at Twilio's platform team. Reach out for advice on DevRel hiring, SDK/API onboarding funnels, or conference speaking connections.",
+  "relevance_tags": [
+    "Developer Relations",
+    "API design",
+    "Developer experience",
+    "Conference speaker",
+    "Payments developer platforms"
+  ],
+  "connection_notes": [],
+  "source_type": "text",
+  "created_at": "2026-07-13T16:26:19.326356+00:00",
+  "updated_at": "2026-07-13T16:26:19.326356+00:00",
+  "embedding": "<1536-dim float vector, omitted for readability \u2014 see /docs response for real shape>"
+}

@@ -1,0 +1,54 @@
+Home My Network Jobs Messaging Notifications
+
+Daniel Okafor
+Head of Developer Relations @ Stellarpay | Ex-Twilio, Ex-Stripe | Conference speaker
+Toronto, Ontario, Canada · 3rd+
+15,200 followers
+Follow  Connect  Message  More
+
+About
+I've spent a decade making developers fall in love with APIs, first at
+Stripe (early DevRel hire, employee #340), then running platform DevRel at
+Twilio, and now building the developer relations org at Stellarpay from
+scratch. I've given 60+ conference talks (KubeCon, API World, Stripe
+Sessions), written docs that developers actually read, and built
+developer-advocate teams on three continents.
+
+My superpower is turning "nobody's integrating our API" into a healthy
+self-serve developer funnel: better docs, better SDKs, a devrel content
+engine, and a community that answers its own questions on Discord before
+support ever sees the ticket. Currently hiring two more developer
+advocates for the EMEA team.
+
+Experience
+Head of Developer Relations
+Stellarpay · Full-time
+Apr 2022 - Present · 3 yrs 3 mos
+Toronto, ON
+Built the DevRel function from 1 to 9 people across 3 regions. Launched
+the public API docs rewrite and a new SDK generation pipeline (7
+languages), cutting time-to-first-API-call from 45 min to 6 min.
+
+Senior Developer Advocate, Platform
+Twilio · Full-time
+Feb 2018 - Mar 2022 · 4 yrs 2 mos
+Led platform DevRel for Twilio's Programmable Voice and Video APIs.
+Regular speaker at SIGNAL, KubeCon, and regional dev meetups.
+
+Developer Advocate
+Stripe · Full-time
+Jun 2015 - Jan 2018 · 2 yrs 8 mos
+Early DevRel hire (#340). Wrote integration guides and sample apps for
+the Payments and Connect APIs.
+
+Education
+University of Waterloo
+B.Math, Computer Science · 2011 - 2015
+
+Skills
+Developer Relations · API Design · Technical Writing · Public Speaking ·
+Developer Experience (DX) · SDK Design · Community Building · Node.js
+
+Show all 32 skills
+6 mutual connections
+Like Comment Share

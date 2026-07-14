@@ -1,0 +1,85 @@
+{
+  "id": "936f2291-bbea-4ef7-a54c-cec950a5d720",
+  "full_name": "Sofia Ibarra",
+  "headline": "VP of Product, Clinical Workflows @ Ardent Health Systems | Practicing physician turned product leader",
+  "linkedin_url": "https://www.linkedin.com/in/sofia-ibarra-example",
+  "photo_url": null,
+  "current_company": "Ardent Health Systems",
+  "current_title": "VP of Product, Clinical Workflows",
+  "location": "Nashville, Tennessee Metropolitan Area",
+  "industry": "Healthcare / Health Tech",
+  "summary": "Physician (MD) turned product leader with an MPH in health informatics. Leads clinical-workflow product at Ardent Health Systems across 30 hospitals; previously built a clinical decision support product team from scratch and shipped an FDA Class II SaMD-cleared tool.",
+  "experience": [
+    {
+      "title": "VP of Product, Clinical Workflows",
+      "company": "Ardent Health Systems",
+      "start_date": "2023-02",
+      "end_date": null,
+      "description": "Owns product strategy for clinician-facing EHR workflow tools across 30 hospitals. Led launch of an AI-assisted clinical documentation tool now used by 1,200 physicians."
+    },
+    {
+      "title": "Director of Product",
+      "company": "Cadence Health",
+      "start_date": "2020-06",
+      "end_date": "2023-01",
+      "description": "Built and led the clinical decision support product team (0 to 9 people). Shipped a Class II SaMD-cleared risk-scoring tool."
+    },
+    {
+      "title": "Internal Medicine Physician",
+      "company": "Vanderbilt University Medical Center",
+      "start_date": "2014-07",
+      "end_date": "2020-05",
+      "description": null
+    }
+  ],
+  "education": [
+    {
+      "school": "Johns Hopkins Bloomberg School of Public Health",
+      "degree": "MPH",
+      "field_of_study": "Health Informatics",
+      "start_year": "2018",
+      "end_year": "2020"
+    },
+    {
+      "school": "Vanderbilt University School of Medicine",
+      "degree": "MD",
+      "field_of_study": null,
+      "start_year": "2010",
+      "end_year": "2014"
+    }
+  ],
+  "skills": [
+    "Healthcare Product Management",
+    "Clinician Stakeholder Management",
+    "Product Strategy"
+  ],
+  "technologies": [],
+  "domains": [
+    "Healthcare",
+    "Clinical Workflows",
+    "Regulatory / SaMD"
+  ],
+  "capabilities": [
+    "Can advise on FDA Class II SaMD regulatory strategy for clinical decision support products",
+    "Can translate between clinicians and engineering teams",
+    "Can lead HIPAA/SOC2 compliance workstreams for health-tech products"
+  ],
+  "interests": [
+    "Clinical decision support",
+    "Health informatics",
+    "Advisory work for health-tech startups"
+  ],
+  "relevance_summary": "Sofia is a rare dual-credentialed contact: a practicing MD who is also a senior product leader, which makes her unusually good at bridging clinicians and engineers. She's the person to reach out to for regulatory strategy on clinical decision support (Class II SaMD), HIPAA/SOC2 compliance planning, or advisory roles at clinician-facing health-tech startups.",
+  "relevance_tags": [
+    "Healthcare domain expertise",
+    "Product strategy",
+    "Regulatory / SaMD",
+    "Clinician-engineer bridge",
+    "Advisor for health-tech startups"
+  ],
+  "connection_notes": [],
+  "source_type": "text",
+  "created_at": "2026-07-13T16:26:19.326356+00:00",
+  "updated_at": "2026-07-13T16:26:19.326356+00:00",
+  "embedding": "<1536-dim float vector, omitted for readability \u2014 see /docs response for real shape>"
+}
