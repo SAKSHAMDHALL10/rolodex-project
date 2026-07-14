@@ -86,7 +86,7 @@ def extract_profile(cleaned_text: str) -> ExtractionResult:
     client = get_gemini_client()
 
     response = client.models.generate_content(
-        model=settings.GEMINI_MODEL,
+        model=settings.GEMINI_TEXT_MODEL,
         contents=(
             "Extract a rolodex entry from this profile.\n\n"
             f"<profile_text>\n{cleaned_text}\n</profile_text>"
@@ -123,7 +123,7 @@ def parse_natural_language_query(query: str) -> dict:
     client = get_gemini_client()
 
     response = client.models.generate_content(
-        model=settings.GEMINI_MODEL,
+        model=settings.GEMINI_TEXT_MODEL,
         contents=query,
         config=types.GenerateContentConfig(
             system_instruction=_NL_QUERY_SYSTEM_PROMPT,

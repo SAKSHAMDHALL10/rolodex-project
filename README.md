@@ -26,7 +26,7 @@ LinkedIn profile text/export
   build_embedding_text()      concatenates summary + relevance + skills
         │                     + capabilities
         ▼
-  embed_text()                Gemini Embeddings (gemini-embedding-001) → 1536-dim vector
+  embed_text()                Gemini Embeddings (gemini-embedding-2) → 1536-dim vector
         │
         ▼
   find_duplicates()           exact URL match → fuzzy name match → cosine
@@ -457,3 +457,11 @@ curl http://localhost:8000/api/v1/dashboard
   few thousand contacts). For a much larger rolodex, consider `hnsw` instead
   (supported by pgvector 0.5+) or re-tuning `lists` to roughly
   `sqrt(row_count)`.
+- **Gemini model deprecations are handled by config, not code.** `GEMINI_TEXT_MODEL`
+  and `GEMINI_EMBEDDING_MODEL` are the only place model names appear. On
+  startup (if `GEMINI_API_KEY` is set), the app calls Gemini's `models.get`
+  for both and refuses to start with a clear error if either has been
+  deprecated/renamed - check the startup logs, not a mid-request stack
+  trace, if a deployment fails after a Google model change. See
+  https://ai.google.dev/gemini-api/docs/models for the current model list
+  and https://ai.google.dev/gemini-api/docs/deprecations for shutdown dates.

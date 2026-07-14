@@ -28,12 +28,18 @@ class Settings(BaseSettings):
 
     # --- Gemini (Google GenAI) ---
     GEMINI_API_KEY: str = Field(default="")
-    GEMINI_MODEL: str = Field(default="gemini-2.5-flash")
-    GEMINI_EMBEDDING_MODEL: str = Field(default="gemini-embedding-001")
-    # gemini-embedding-001 defaults to 3072 dims but supports configurable
-    # output_dimensionality via Matryoshka truncation; 1536 is one of Google's
-    # own recommended tiers (alongside 3072/768) and keeps the existing
-    # pgvector column size and ivfflat index unchanged.
+    # Current GA production models as of July 2026. If Google deprecates
+    # either of these, update the environment variable - no code change
+    # needed. See _validate_gemini_models_on_startup() in app/main.py, which
+    # checks these against the live API at boot and fails clearly (not with
+    # an obscure runtime exception) if either is no longer available.
+    GEMINI_TEXT_MODEL: str = Field(default="gemini-3.5-flash")
+    GEMINI_EMBEDDING_MODEL: str = Field(default="gemini-embedding-2")
+    # Both gemini-embedding-001 and its replacement gemini-embedding-2 default
+    # to 3072 dims but support configurable output_dimensionality via
+    # Matryoshka truncation; 1536 is one of Google's own recommended tiers
+    # (alongside 3072/768) and keeps the pgvector column size/ivfflat index
+    # unchanged regardless of which embedding model generation is in use.
     GEMINI_EMBEDDING_DIMENSIONS: int = Field(default=1536)
 
     # --- CORS ---

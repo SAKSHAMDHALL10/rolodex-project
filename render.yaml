@@ -23,10 +23,10 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: GEMINI_MODEL
-        value: gemini-2.5-flash
+      - key: GEMINI_TEXT_MODEL
+        value: gemini-3.5-flash
       - key: GEMINI_EMBEDDING_MODEL
-        value: gemini-embedding-001
+        value: gemini-embedding-2
       - key: GEMINI_EMBEDDING_DIMENSIONS
         value: "1536"
       - key: DUPLICATE_SIMILARITY_THRESHOLD

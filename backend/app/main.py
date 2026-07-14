@@ -5,6 +5,7 @@ Run locally with:
     uvicorn app.main:app --reload --port 8000
 """
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -16,10 +17,18 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.startup_checks import validate_gemini_models
 from app.routers import contacts, dashboard, search
 
 logging.basicConfig(level=settings.LOG_LEVEL)
 logger = logging.getLogger("rolodex")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    validate_gemini_models()
+    yield
+
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -28,6 +37,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
