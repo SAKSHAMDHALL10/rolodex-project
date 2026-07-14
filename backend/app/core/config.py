@@ -43,7 +43,14 @@ class Settings(BaseSettings):
     GEMINI_EMBEDDING_DIMENSIONS: int = Field(default=1536)
 
     # --- CORS ---
+    # Comma-separated exact origins (scheme://host[:port], no trailing slash
+    # or path - that's all a browser's Origin header ever contains).
     CORS_ORIGINS: str = Field(default="http://localhost:3000")
+    # Optional: a regex to additionally allow origins matching a pattern,
+    # e.g. Vercel preview-deployment URLs which don't match the fixed
+    # production origin above. Example:
+    # CORS_ORIGIN_REGEX=https://rolodex-project.*\.vercel\.app
+    CORS_ORIGIN_REGEX: str | None = Field(default=None)
 
     # --- Duplicate detection ---
     DUPLICATE_SIMILARITY_THRESHOLD: float = Field(default=0.90)
@@ -102,7 +109,19 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> list[str]:
-        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        origins = []
+        for raw in self.CORS_ORIGINS.split(","):
+            origin = raw.strip()
+            if not origin:
+                continue
+            # Browsers' Origin header is always scheme://host[:port] with NO
+            # trailing slash or path. A trailing slash here (e.g. pasted
+            # straight from a browser address bar into Railway/Render's
+            # dashboard) will never exact-match the real Origin header,
+            # which silently breaks every cross-origin request with a CORS
+            # preflight 400 - normalize it away rather than fail confusingly.
+            origins.append(origin.rstrip("/"))
+        return origins
 
 
 @lru_cache

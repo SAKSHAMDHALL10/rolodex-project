@@ -308,9 +308,13 @@ python3 scripts/seed_sample_data.py --api-url https://<your-backend-url>/api/v1
    confirm it returns the contact you just added.
 
 If a request fails, check: (a) the Vercel env var points at your Railway URL
-with the exact `/api/v1` suffix, (b) `CORS_ORIGINS` on Railway exactly matches
-your Vercel URL (no trailing slash), (c) the Railway logs for `GEMINI_API_KEY`
-or database connection errors.
+with the exact `/api/v1` suffix, (b) `CORS_ORIGINS` on Railway includes your
+Vercel URL (a trailing slash is fine - it's normalized away automatically),
+(c) the Railway logs for `GEMINI_API_KEY` or database connection errors. If
+you also need Vercel *preview* deployments (which get their own unique URLs)
+to work, set `CORS_ORIGIN_REGEX` to a pattern matching your project, e.g.
+`https://rolodex-agent.*\.vercel\.app` - this is checked in addition to, not
+instead of, `CORS_ORIGINS`.
 
 ---
 

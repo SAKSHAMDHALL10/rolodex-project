@@ -4,6 +4,32 @@ from pydantic import ValidationError
 from app.core.config import Settings
 
 
+def test_cors_origins_list_strips_trailing_slash():
+    """
+    Regression test for a real production incident: a trailing slash in
+    CORS_ORIGINS (e.g. pasted from a browser address bar into a Railway/
+    Render env var) never matches a browser's Origin header, which has no
+    trailing slash - this silently broke every cross-origin request with a
+    CORS preflight 400 "Disallowed CORS origin".
+    """
+    s = Settings(CORS_ORIGINS="https://rolodex-project.vercel.app/")
+    assert s.cors_origins_list == ["https://rolodex-project.vercel.app"]
+
+
+def test_cors_origins_list_handles_multiple_origins_mixed_slashes():
+    s = Settings(CORS_ORIGINS="https://a.vercel.app/, https://b.vercel.app,https://c.vercel.app/")
+    assert s.cors_origins_list == [
+        "https://a.vercel.app",
+        "https://b.vercel.app",
+        "https://c.vercel.app",
+    ]
+
+
+def test_cors_origins_list_ignores_empty_entries():
+    s = Settings(CORS_ORIGINS="https://a.vercel.app/,,  ,")
+    assert s.cors_origins_list == ["https://a.vercel.app"]
+
+
 def test_accepts_correct_psycopg3_url():
     s = Settings(DATABASE_URL="postgresql+psycopg://user:pass@host:5432/db")
     assert s.DATABASE_URL.startswith("postgresql+psycopg://")
