@@ -279,6 +279,16 @@ git push -u origin main
 2. Set **Root Directory** to `frontend` in the import settings.
 3. Add an environment variable:
    - `NEXT_PUBLIC_API_URL` = `https://<your-backend-url>/api/v1`
+
+   This must be the **full absolute URL**, including `https://` and the
+   `/api/v1` suffix - not just the bare domain (e.g. `your-backend.up.railway.app`
+   on its own). A bare domain isn't rejected as invalid HTML/JS syntax, but
+   `fetch()` silently treats it as a *relative* path and resolves it against
+   the current page's own origin, producing nonsense URLs like
+   `https://your-app.vercel.app/your-backend.up.railway.app/dashboard` and a
+   confusing 404 - the frontend validates this at runtime and will show a
+   clear error identifying the exact problem if it's misconfigured, rather
+   than a silent wrong request.
 4. Click **Deploy**. Vercel builds and gives you a URL like
    `https://rolodex-agent.vercel.app`.
 
